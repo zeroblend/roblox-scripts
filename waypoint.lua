@@ -9,7 +9,7 @@ local superSpeed = false
 local superJump = false
 local speedConnection, jumpConnection = nil, nil
 
-local SUPER_WALKSPEED = 125
+local SUPER_WALKSPEED = 500
 local SUPER_JUMPPOWER = 150
 local NORMAL_WALKSPEED = 16
 local NORMAL_JUMPPOWER = 50
