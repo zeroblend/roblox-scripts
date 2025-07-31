@@ -55,6 +55,14 @@ stopBtn.Text = "🛑 Stop Teleport"
 stopBtn.Font = Enum.Font.SourceSansBold
 stopBtn.TextScaled = true
 
+-- Helper function for safe teleport
+local function safeTeleport(pos)
+	local safePos = pos + Vector3.new(0, 5, 0)
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(safePos)
+	end
+end
+
 -- Set Current Position Logic
 createBtn.MouseButton1Click:Connect(function()
 	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -67,9 +75,9 @@ end)
 
 -- Teleport Once Logic
 tpOnceBtn.MouseButton1Click:Connect(function()
-	if waypoint and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+	if waypoint then
 		keepTeleporting = false -- stop any keep-teleporting loop if active
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(waypoint)
+		safeTeleport(waypoint)
 	else
 		tpOnceBtn.Text = "❌ No Saved Spot"
 		wait(1)
@@ -79,13 +87,12 @@ end)
 
 -- Start Keep Teleporting Logic
 startKeepBtn.MouseButton1Click:Connect(function()
-	if waypoint and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+	if waypoint then
 		if not keepTeleporting then
 			keepTeleporting = true
-			local hrp = player.Character.HumanoidRootPart
 			spawn(function()
-				while keepTeleporting and hrp.Parent do
-					hrp.CFrame = CFrame.new(waypoint)
+				while keepTeleporting and player.Character and player.Character:FindFirstChild("HumanoidRootPart") do
+					safeTeleport(waypoint)
 					wait()
 				end
 			end)
