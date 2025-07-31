@@ -1,6 +1,7 @@
--- Steal a Brainrot Utility Panel (Mobile Friendly)
+-- Steal a Brainrot Utility Panel (Mobile Friendly, Draggable)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local player = Players.LocalPlayer
 local waypoint = nil
@@ -8,7 +9,7 @@ local superSpeed = false
 local superJump = false
 local speedConnection, jumpConnection = nil, nil
 
-local SUPER_WALKSPEED = 100
+local SUPER_WALKSPEED = 125
 local SUPER_JUMPPOWER = 150
 local NORMAL_WALKSPEED = 16
 local NORMAL_JUMPPOWER = 50
@@ -22,6 +23,8 @@ local frame = Instance.new("Frame", gui)
 frame.Size = UDim2.new(0, 320, 0, 320)
 frame.Position = UDim2.new(0.5, -160, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.Active = true
+frame.Draggable = true -- ← basic dragging support
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
 
 local function createButton(yPos, text)
