@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local waypoint = nil
+--dih
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "BrainrotWaypointGui"
