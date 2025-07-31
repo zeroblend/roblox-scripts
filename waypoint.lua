@@ -1,69 +1,90 @@
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local waypoint = nil
 local keepTeleporting = false
+local invincible = false
+local originalTakeDamage
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.Name = "BrainrotWaypointGui"
 gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 320, 0, 280)  -- taller for 4 buttons
+frame.Size = UDim2.new(0, 320, 0, 280)
 frame.Position = UDim2.new(0.5, -160, 0.5, -140)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 
 local corner = Instance.new("UICorner", frame)
 corner.CornerRadius = UDim.new(0, 12)
 
--- Set Current Position Button
-local createBtn = Instance.new("TextButton", frame)
-createBtn.Size = UDim2.new(1, -40, 0, 60)
-createBtn.Position = UDim2.new(0, 20, 0, 20)
-createBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
-createBtn.TextColor3 = Color3.new(1, 1, 1)
-createBtn.Text = "📍 Set Current Position"
-createBtn.Font = Enum.Font.SourceSansBold
-createBtn.TextScaled = true
+-- Buttons
+local function createButton(parent, posY, color, text)
+	local btn = Instance.new("TextButton", parent)
+	btn.Size = UDim2.new(1, -40, 0, 60)
+	btn.Position = UDim2.new(0, 20, 0, posY)
+	btn.BackgroundColor3 = color
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Text = text
+	btn.Font = Enum.Font.SourceSansBold
+	btn.TextScaled = true
+	return btn
+end
 
--- Teleport Once Button
-local tpOnceBtn = Instance.new("TextButton", frame)
-tpOnceBtn.Size = UDim2.new(1, -40, 0, 60)
-tpOnceBtn.Position = UDim2.new(0, 20, 0, 90)
-tpOnceBtn.BackgroundColor3 = Color3.fromRGB(70, 130, 255)
-tpOnceBtn.TextColor3 = Color3.new(1, 1, 1)
-tpOnceBtn.Text = "🚀 Teleport Once"
-tpOnceBtn.Font = Enum.Font.SourceSansBold
-tpOnceBtn.TextScaled = true
+local createBtn = createButton(frame, 20, Color3.fromRGB(0, 200, 100), "📍 Set Current Position")
+local tpOnceBtn = createButton(frame, 90, Color3.fromRGB(70, 130, 255), "🚀 Teleport Once")
+local startKeepBtn = createButton(frame, 160, Color3.fromRGB(0, 170, 255), "🔁 Start Keep Teleport")
+local stopBtn = createButton(frame, 230, Color3.fromRGB(255, 70, 70), "🛑 Stop Teleport")
 
--- Start Keep Teleporting Button
-local startKeepBtn = Instance.new("TextButton", frame)
-startKeepBtn.Size = UDim2.new(1, -40, 0, 60)
-startKeepBtn.Position = UDim2.new(0, 20, 0, 160)
-startKeepBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-startKeepBtn.TextColor3 = Color3.new(1, 1, 1)
-startKeepBtn.Text = "🔁 Start Keep Teleport"
-startKeepBtn.Font = Enum.Font.SourceSansBold
-startKeepBtn.TextScaled = true
+-- Raycast up to find safe teleport position
+local function findSafePosition(startPos)
+	local rayOrigin = startPos
+	local rayDirection = Vector3.new(0, 50, 0)  -- cast 50 studs up
+	local raycastParams = RaycastParams.new()
+	raycastParams.FilterDescendantsInstances = {player.Character}
+	raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
 
--- Stop Teleporting Button
-local stopBtn = Instance.new("TextButton", frame)
-stopBtn.Size = UDim2.new(1, -40, 0, 50)
-stopBtn.Position = UDim2.new(0, 20, 0, 230)
-stopBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
-stopBtn.TextColor3 = Color3.new(1, 1, 1)
-stopBtn.Text = "🛑 Stop Teleport"
-stopBtn.Font = Enum.Font.SourceSansBold
-stopBtn.TextScaled = true
-
--- Helper function for safe teleport
-local function safeTeleport(pos)
-	local safePos = pos + Vector3.new(0, 5, 0)
-	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-		player.Character.HumanoidRootPart.CFrame = CFrame.new(safePos)
+	local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+	if raycastResult then
+		-- Hit something above, teleport a bit below hit point to avoid clipping
+		return raycastResult.Position - Vector3.new(0, 3, 0)
+	else
+		-- Nothing above, teleport 15 studs up from start
+		return startPos + Vector3.new(0, 15, 0)
 	end
 end
 
--- Set Current Position Logic
+-- True invincibility by overriding TakeDamage
+local function makeInvincible(duration)
+	if invincible then return end
+	invincible = true
+
+	local humanoid = player.Character and player.Character:FindFirstChildWhichIsA("Humanoid")
+	if not humanoid then return end
+
+	originalTakeDamage = humanoid.TakeDamage
+
+	humanoid.TakeDamage = function() end
+
+	delay(duration, function()
+		if humanoid then
+			humanoid.TakeDamage = originalTakeDamage
+		end
+		invincible = false
+	end)
+end
+
+-- Safe teleport helper
+local function safeTeleport(pos)
+	local safePos = findSafePosition(pos)
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+		player.Character.HumanoidRootPart.CFrame = CFrame.new(safePos)
+		makeInvincible(3)  -- 3 seconds invincibility after teleport
+	end
+end
+
+-- Button logic
+
 createBtn.MouseButton1Click:Connect(function()
 	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
 		waypoint = player.Character.HumanoidRootPart.Position
@@ -73,10 +94,9 @@ createBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Teleport Once Logic
 tpOnceBtn.MouseButton1Click:Connect(function()
 	if waypoint then
-		keepTeleporting = false -- stop any keep-teleporting loop if active
+		keepTeleporting = false
 		safeTeleport(waypoint)
 	else
 		tpOnceBtn.Text = "❌ No Saved Spot"
@@ -85,7 +105,6 @@ tpOnceBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Start Keep Teleporting Logic
 startKeepBtn.MouseButton1Click:Connect(function()
 	if waypoint then
 		if not keepTeleporting then
@@ -104,7 +123,6 @@ startKeepBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Stop Teleporting Logic
 stopBtn.MouseButton1Click:Connect(function()
 	keepTeleporting = false
 end)
