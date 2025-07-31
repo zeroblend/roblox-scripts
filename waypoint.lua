@@ -1,46 +1,50 @@
--- Waypoint GUI Script for loadstring
+-- Big Mobile Waypoint GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "WaypointGui"
+gui.Name = "BigWaypointGui"
+gui.ResetOnSpawn = false
 
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 220, 0, 120)
-frame.Position = UDim2.new(0.5, -110, 0.5, -60)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Size = UDim2.new(0, 300, 0, 180)
+frame.Position = UDim2.new(0.5, -150, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.BorderSizePixel = 0
+frame.BackgroundTransparency = 0.1
 
-local makeWaypoint = Instance.new("TextButton", frame)
-makeWaypoint.Size = UDim2.new(1, -20, 0, 40)
-makeWaypoint.Position = UDim2.new(0, 10, 0, 10)
-makeWaypoint.BackgroundColor3 = Color3.fromRGB(80, 180, 80)
-makeWaypoint.TextColor3 = Color3.fromRGB(255, 255, 255)
-makeWaypoint.Text = "Create Waypoint"
-makeWaypoint.Font = Enum.Font.SourceSans
-makeWaypoint.TextSize = 20
+local uicorner = Instance.new("UICorner", frame)
+uicorner.CornerRadius = UDim.new(0, 12)
 
-local teleportButton = Instance.new("TextButton", frame)
-teleportButton.Size = UDim2.new(1, -20, 0, 40)
-teleportButton.Position = UDim2.new(0, 10, 0, 60)
-teleportButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.Text = "Teleport!"
-teleportButton.Font = Enum.Font.SourceSans
-teleportButton.TextSize = 20
+local createBtn = Instance.new("TextButton", frame)
+createBtn.Size = UDim2.new(1, -40, 0, 60)
+createBtn.Position = UDim2.new(0, 20, 0, 20)
+createBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 100)
+createBtn.TextColor3 = Color3.new(1, 1, 1)
+createBtn.Text = "📍 Create Waypoint"
+createBtn.TextScaled = true
+createBtn.Font = Enum.Font.SourceSansBold
 
--- Storage for saved location
+local tpBtn = Instance.new("TextButton", frame)
+tpBtn.Size = UDim2.new(1, -40, 0, 60)
+tpBtn.Position = UDim2.new(0, 20, 0, 100)
+tpBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+tpBtn.TextColor3 = Color3.new(1, 1, 1)
+tpBtn.Text = "🚀 Teleport!"
+tpBtn.TextScaled = true
+tpBtn.Font = Enum.Font.SourceSansBold
+
 local waypoint = nil
 
-makeWaypoint.MouseButton1Click:Connect(function()
+createBtn.MouseButton1Click:Connect(function()
 	local player = game.Players.LocalPlayer
 	local char = player.Character
 	if char and char:FindFirstChild("HumanoidRootPart") then
 		waypoint = char.HumanoidRootPart.Position
-		makeWaypoint.Text = "Waypoint Saved!"
-		task.wait(1)
-		makeWaypoint.Text = "Create Waypoint"
+		createBtn.Text = "✅ Waypoint Saved"
+		wait(1)
+		createBtn.Text = "📍 Create Waypoint"
 	end
 end)
 
-teleportButton.MouseButton1Click:Connect(function()
+tpBtn.MouseButton1Click:Connect(function()
 	if waypoint then
 		local player = game.Players.LocalPlayer
 		local char = player.Character
@@ -48,8 +52,8 @@ teleportButton.MouseButton1Click:Connect(function()
 			char:MoveTo(waypoint)
 		end
 	else
-		teleportButton.Text = "No Waypoint!"
-		task.wait(1)
-		teleportButton.Text = "Teleport!"
+		tpBtn.Text = "❌ No Waypoint"
+		wait(1)
+		tpBtn.Text = "🚀 Teleport!"
 	end
 end)
